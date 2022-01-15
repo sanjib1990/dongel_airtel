@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
+	"strconv"
 )
 
 var Values *config
@@ -28,16 +29,28 @@ func init() {
 		fmt.Println("error decoding")
 	}
 
+	Values.MaxRetries, _ = strconv.Atoi(Values.MaxRetriesStr)
+	Values.BatteryAlertPercentage, _ = strconv.Atoi(Values.BatteryAlertPercentageStr)
+
+	Values.IsDebug = Values.DebugStr == "1"
+
 	Values.Uri.SetCommand = "/goform/goform_set_cmd_process"
 	Values.Uri.GetCommand = "/goform/goform_get_cmd_process"
-
 }
 
 type config struct {
-	UserName string `mapstructure:"user_name"`
-	Password string `mapstructure:"password"`
-	BaseUrl  string `mapstructure:"base_url"`
-	Uri      uri
+	UserName                  string `mapstructure:"user_name"`
+	Password                  string `mapstructure:"password"`
+	BaseUrl                   string `mapstructure:"base_url"`
+	MaxRetriesStr             string `mapstructure:"max_retries"`
+	BatteryAlertPercentageStr string `mapstructure:"battery_alert_percentage"`
+	SlackToken                string `mapstructure:"slack_token"`
+	DebugStr                  string `mapstructure:"debug"`
+	SlackChannelId            string `mapstructure:"slack_channel_id"`
+	IsDebug                   bool
+	Uri                       uri
+	MaxRetries                int
+	BatteryAlertPercentage    int
 }
 
 type uri struct {

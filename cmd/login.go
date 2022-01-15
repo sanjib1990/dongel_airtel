@@ -2,10 +2,8 @@
 package cmd
 
 import (
+	"dongel/Models"
 	"dongel/Service"
-	"dongel/config"
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -15,14 +13,15 @@ var loginCmd = &cobra.Command{
 	Short: "Login to Dongel",
 	Long:  `Login to Dongel`,
 	Run: func(cmd *cobra.Command, args []string) {
-		Service.Login()
+		usr := Models.User{}
 
-		fmt.Println("Login Has been called", config.Values.UserName)
+		usr.UserName = rootCmd.PersistentFlags().Lookup("username").Value.String()
+		usr.Password = rootCmd.PersistentFlags().Lookup("password").Value.String()
+
+		Service.Login(&usr)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(loginCmd)
-	loginCmd.PersistentFlags().String("username", "", "Username to login with. Default will be taken from the config / env")
-	loginCmd.PersistentFlags().String("password", "", "Password to login with. Default will be taken from the config / env")
 }

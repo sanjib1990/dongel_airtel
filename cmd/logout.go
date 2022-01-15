@@ -5,23 +5,17 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
-
+	"dongel/Service"
 	"github.com/spf13/cobra"
 )
 
 // logoutCmd represents the logout command
 var logoutCmd = &cobra.Command{
 	Use:   "logout",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Logout from Dongel",
+	Long:  `Logs out of the dongel`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("logout called")
+		Service.Logout()
 	},
 }
 

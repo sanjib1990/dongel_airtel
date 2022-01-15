@@ -45,5 +45,10 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().String("username", "", "Username to login with. Default will be taken from the config / env")
+	rootCmd.PersistentFlags().String("password", "", "Password to login with. Default will be taken from the config / env")
+	rootCmd.PersistentFlags().BoolP("delete", "d", false, "delete available sms")
+	rootCmd.PersistentFlags().BoolP("alert", "a", false, "Alert for low battery")
+	rootCmd.PersistentFlags().BoolP("view-sms", "v", false, "View SMS")
+	rootCmd.PersistentFlags().String("alert-charge", "", "Charge value below which alert will be triggered")
 }
