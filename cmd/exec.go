@@ -7,6 +7,7 @@ package cmd
 import (
 	"dongel/Models"
 	"dongel/Service"
+	"dongel/config"
 	"github.com/spf13/cobra"
 	"strconv"
 )
@@ -40,9 +41,12 @@ var execCmd = &cobra.Command{
 			println("Execution Failed")
 			return
 		}
-		if minBatteryVlm != "" {
-			minBattery, _ = strconv.Atoi(minBatteryVlm)
+
+		if minBatteryVlm == "" {
+			minBatteryVlm = config.Values.BatteryAlertPercentageStr
 		}
+		
+		minBattery, _ = strconv.Atoi(minBatteryVlm)
 		if alert == true && minBattery > 0 {
 			step++
 			print("[" + strconv.Itoa(step) + "] ")

@@ -4,13 +4,20 @@ import (
 	"fmt"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
+	"os"
 	"strconv"
 )
 
 var Values *config
 
 func init() {
-	viper.SetConfigFile(".env")
+	envPath := os.Getenv("ENV_PATH")
+
+	if envPath != "" {
+		envPath += "/"
+	}
+
+	viper.SetConfigFile(envPath + ".env")
 
 	var result map[string]interface{}
 
