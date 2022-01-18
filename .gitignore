@@ -1,4 +1,5 @@
 .env
 .idea
 dongel
+logs/*.log
 ./runner
