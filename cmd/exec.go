@@ -8,6 +8,7 @@ import (
 	"dongel/Models"
 	"dongel/Service"
 	"dongel/config"
+	"fmt"
 	"github.com/spf13/cobra"
 	"strconv"
 )
@@ -28,42 +29,42 @@ var execCmd = &cobra.Command{
 		alert := rootCmd.PersistentFlags().Lookup("alert").Value.String() == "true"
 		var minBattery int
 		step := 1
-		print("[" + strconv.Itoa(step) + "] ")
+		fmt.Print("[" + strconv.Itoa(step) + "] ")
 		rs := Service.Login(&usr)
 		if rs.Status != 1 {
-			println("Execution Failed")
+			fmt.Println("Execution Failed")
 			return
 		}
 		step++
-		println("[" + strconv.Itoa(step) + "] Stats ")
+		fmt.Println("[" + strconv.Itoa(step) + "] Stats ")
 		rsp := Service.Stats()
 		if rsp.Status != 1 {
-			println("Execution Failed")
+			fmt.Println("Execution Failed")
 			return
 		}
 
 		if minBatteryVlm == "" {
 			minBatteryVlm = config.Values.BatteryAlertPercentageStr
 		}
-		
+
 		minBattery, _ = strconv.Atoi(minBatteryVlm)
 		if alert == true && minBattery > 0 {
 			step++
-			print("[" + strconv.Itoa(step) + "] ")
+			fmt.Print("[" + strconv.Itoa(step) + "] ")
 			rsp = Service.HandleCharge(&rsp, minBattery)
 		}
 		if viewSms == true {
 			step++
-			println("[" + strconv.Itoa(step) + "] SMS")
+			fmt.Println("[" + strconv.Itoa(step) + "] SMS")
 			rsp = Service.Sms(shoudDelete)
 			if rsp.Status != 1 {
-				println("Execution Failed")
+				fmt.Println("Execution Failed")
 				return
 			}
 		}
 
 		step++
-		print("[" + strconv.Itoa(step) + "] ")
+		fmt.Print("[" + strconv.Itoa(step) + "] ")
 		Service.Logout()
 	},
 }

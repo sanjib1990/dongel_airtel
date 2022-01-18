@@ -97,11 +97,11 @@ func HandleCharge(resp *Models.Response, minBattery int) Models.Response {
 	var rs Models.Response
 	currBttrVlm, err := strconv.Atoi(resp.BatteryVolPercent)
 	if err != nil {
-		println("Cannot handle charge alert, as the value could not be determined")
+		fmt.Println("Cannot handle charge alert, as the value could not be determined")
 		return rs
 	}
 	if currBttrVlm > minBattery {
-		println("Battery is above thrashold")
+		fmt.Println("Battery is above thrashold")
 		return rs
 	}
 
@@ -119,7 +119,7 @@ func HandleCharge(resp *Models.Response, minBattery int) Models.Response {
 	)
 
 	if err != nil {
-		println("[Slack Error] ", message, err.Error())
+		fmt.Println("[Slack Error] ", message, err.Error())
 		return rs
 	}
 
@@ -143,7 +143,7 @@ func Sms(delete bool) Models.Response {
 	makeGetCommandCalls(data, &rsp)
 
 	if rsp.SmsDataTotal == "" {
-		println("Checking Stats..")
+		fmt.Println("Checking Stats..")
 		Stats()
 		return rsp
 	}
@@ -191,7 +191,7 @@ func DeleteSmsByIds(smsList []Models.Sms) {
 		"notCallback":   "true",
 	}
 
-	println("Deleting SMS by Id: " + ids)
+	fmt.Println("Deleting SMS by Id: " + ids)
 
 	makeSetCommandCalls(data, "success", "SMS Deleted: ")
 }
