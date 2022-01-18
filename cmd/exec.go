@@ -13,33 +13,50 @@ import (
 	"strconv"
 )
 
+var ExecSlackMessage = ""
+
 // execCmd represents the exec command
 var execCmd = &cobra.Command{
 	Use:   "exec",
 	Short: "Handle Few execs",
 	Long:  `Handle login -> stats -> sms -> charge status -> delete SMS`,
+	PostRun: func(cmd *cobra.Command, args []string) {
+		var slack Models.SlackNotification
+
+		if config.Values.SlackChannelId == "" {
+			return
+		}
+		ExecSlackMessage = "*[Dongel Automation Run]* `" + ExecSlackMessage + "`"
+
+		slack.SendNotification(config.Values.SlackChannelId, ExecSlackMessage)
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		usr := Models.User{}
-
+		ExecSlackMessage = ""
 		usr.UserName = rootCmd.PersistentFlags().Lookup("username").Value.String()
 		usr.Password = rootCmd.PersistentFlags().Lookup("password").Value.String()
 		minBatteryVlm := rootCmd.PersistentFlags().Lookup("alert-charge").Value.String()
 		shoudDelete := rootCmd.PersistentFlags().Lookup("delete").Value.String() == "true"
 		viewSms := rootCmd.PersistentFlags().Lookup("view-sms").Value.String() == "true"
 		alert := rootCmd.PersistentFlags().Lookup("alert").Value.String() == "true"
+		overChargeAlert := rootCmd.PersistentFlags().Lookup("overcharge-alert").Value.String() == "true"
 		var minBattery int
 		step := 1
 		fmt.Print("[" + strconv.Itoa(step) + "] ")
-		rs := Service.Login(&usr)
-		if rs.Status != 1 {
+		rsp := Service.Login(&usr)
+		ExecSlackMessage += "Login -> "
+		if rsp.Status != 1 {
 			fmt.Println("Execution Failed")
+			ExecSlackMessage += "Fail"
 			return
 		}
 		step++
 		fmt.Println("[" + strconv.Itoa(step) + "] Stats ")
-		rsp := Service.Stats()
+		rsp = Service.Stats()
+		ExecSlackMessage += "Stats -> "
 		if rsp.Status != 1 {
 			fmt.Println("Execution Failed")
+			ExecSlackMessage += "Fail"
 			return
 		}
 
@@ -50,20 +67,42 @@ var execCmd = &cobra.Command{
 		minBattery, _ = strconv.Atoi(minBatteryVlm)
 		if alert == true && minBattery > 0 {
 			step++
-			fmt.Print("[" + strconv.Itoa(step) + "] ")
-			rsp = Service.HandleCharge(&rsp, minBattery)
+			ExecSlackMessage += "Low Charge Check -> "
+			fmt.Println("[" + strconv.Itoa(step) + "] Low Charge Check")
+			Service.HandleLowCharge(&rsp, minBattery)
+			if rsp.Status != 1 {
+				fmt.Println("Execution Failed")
+				ExecSlackMessage += "Fail"
+				return
+			}
 		}
+
+		if overChargeAlert == true {
+			step++
+			ExecSlackMessage += "Over Charge Check -> "
+			fmt.Println("[" + strconv.Itoa(step) + "] Over Charge Check")
+			Service.HandleOverCharge(&rsp)
+			if rsp.Status != 1 {
+				fmt.Println("Execution Failed")
+				ExecSlackMessage += "Fail"
+				return
+			}
+		}
+
 		if viewSms == true {
 			step++
 			fmt.Println("[" + strconv.Itoa(step) + "] SMS")
+			ExecSlackMessage += "SMS -> "
 			rsp = Service.Sms(shoudDelete)
 			if rsp.Status != 1 {
 				fmt.Println("Execution Failed")
+				ExecSlackMessage += "Fail"
 				return
 			}
 		}
 
 		step++
+		ExecSlackMessage += "Logout"
 		fmt.Print("[" + strconv.Itoa(step) + "] ")
 		Service.Logout()
 	},

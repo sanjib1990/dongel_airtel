@@ -51,4 +51,5 @@ func init() {
 	rootCmd.PersistentFlags().BoolP("alert", "a", false, "Alert for low battery")
 	rootCmd.PersistentFlags().BoolP("view-sms", "v", false, "View SMS")
 	rootCmd.PersistentFlags().String("alert-charge", "", "Charge value below which alert will be triggered")
+	rootCmd.PersistentFlags().BoolP("overcharge-alert", "o", false, "Alert for over charging")
 }

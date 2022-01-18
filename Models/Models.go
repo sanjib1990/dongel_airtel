@@ -1,5 +1,11 @@
 package Models
 
+import (
+	"dongel/config"
+	"fmt"
+	"github.com/slack-go/slack"
+)
+
 type User struct {
 	UserName string
 	Password string
@@ -28,4 +34,24 @@ type Sms struct {
 	Tag          string `json:"tag"`
 	Date         string `json:"date"`
 	DraftGroupId string `json:"draft_group_id"`
+}
+
+type SlackNotification struct {
+}
+
+func (sn SlackNotification) getInstance() *slack.Client {
+	return slack.New(config.Values.SlackToken, slack.OptionDebug(config.Values.IsDebug))
+}
+
+func (sn SlackNotification) SendNotification(channelId string, msg string) int {
+	message, _, err := sn.getInstance().PostMessage(channelId,
+		slack.MsgOptionText(msg, false),
+		slack.MsgOptionAsUser(true))
+
+	if err != nil {
+		fmt.Println("[Slack Error] ", message, err.Error())
+		return 0
+	}
+
+	return 1
 }

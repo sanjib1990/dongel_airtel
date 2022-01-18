@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/jedib0t/go-pretty/v6/table"
-	"github.com/slack-go/slack"
 	"io"
 	"net/http"
 	"net/url"
@@ -90,42 +89,78 @@ func Stats() Models.Response {
 	return rsp
 }
 
-func HandleCharge(resp *Models.Response, minBattery int) Models.Response {
+func HandleLowCharge(resp *Models.Response, minBattery int) {
 	if minBattery <= 0 {
 		minBattery = config.Values.BatteryAlertPercentage
 	}
-	var rs Models.Response
+	resp.Status = 0
 	currBttrVlm, err := strconv.Atoi(resp.BatteryVolPercent)
 	if err != nil {
 		fmt.Println("Cannot handle charge alert, as the value could not be determined")
-		return rs
+		return
 	}
+
+	if resp.BatteryCharging == "1" {
+		resp.Status = 1
+		return
+	}
+
 	if currBttrVlm > minBattery {
 		fmt.Println("Battery is above thrashold")
-		return rs
+		resp.Status = 1
+		return
 	}
 
 	// send Slack notification
-	api := slack.New(config.Values.SlackToken, slack.OptionDebug(config.Values.IsDebug))
+	var slack Models.SlackNotification
 	channelMessage := "<@sanjib> Charge For your Airtel Modem is below " + strconv.Itoa(minBattery) + ". Please put it for charging."
 
 	if config.Values.SlackChannelId == "" {
-		return rs
+		return
 	}
 
-	message, _, err := api.PostMessage(config.Values.SlackChannelId,
-		slack.MsgOptionText(channelMessage, false),
-		slack.MsgOptionAsUser(true),
-	)
+	pass := slack.SendNotification(config.Values.SlackChannelId, channelMessage)
 
+	if pass != 1 {
+		return
+	}
+
+	resp.Status = 1
+
+	return
+}
+
+func HandleOverCharge(resp *Models.Response) {
+	resp.Status = 0
+	currBttrVlm, err := strconv.Atoi(resp.BatteryVolPercent)
 	if err != nil {
-		fmt.Println("[Slack Error] ", message, err.Error())
-		return rs
+		fmt.Println("Cannot handle charge alert, as the value could not be determined")
+		return
+	}
+	if currBttrVlm < 80 {
+		resp.Status = 1
+		return
 	}
 
-	rs.Status = 1
+	// send Slack notification
+	var slack Models.SlackNotification
 
-	return rs
+	channelMessage := "<@sanjib> Charge For your Airtel Modem is full. Please stop charging."
+
+	if config.Values.SlackChannelId == "" {
+		resp.Status = 1
+		return
+	}
+
+	pass := slack.SendNotification(config.Values.SlackChannelId, channelMessage)
+
+	if pass != 1 {
+		return
+	}
+
+	resp.Status = 1
+
+	return
 }
 
 func Sms(delete bool) Models.Response {
