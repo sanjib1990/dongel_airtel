@@ -32,3 +32,13 @@ jobs:
         registry: docker.io
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - uses: rtCamp/action-slack-notify@v2
+      name: Notifying in slack
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+        SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
+        SLACK_COLOR: ${{ job.status }}
+        SLACK_ICON: https://a.slack-edge.com/80588/img/services/outgoing-webhook_128.png
+        SLACK_TITLE: "Dongel-Airtel Build Completed"
+        SLACK_USERNAME: GitAction-Dongel-Airtel-Build
