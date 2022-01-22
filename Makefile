@@ -8,3 +8,6 @@ build:
 clean:
 	rm -rf dongel
 	echo "" > logs/app.log
+
+dep:
+	go mod vendor

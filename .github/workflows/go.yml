@@ -19,10 +19,10 @@ jobs:
         go-version: 1.17.1
       
     - name: Test
-      run: go test -race -v -failfast
+      run: go mod tidy && go test -race -v -failfast
 
     - name: Build
-      run: go clean -cache && go mod vendor && CGO_ENABLED=1 go build -race -o runner
+      run: go mod tidy && go clean -cache && go mod vendor && CGO_ENABLED=1 go build -race -o runner
     
     - uses: mr-smithers-excellent/docker-build-push@v5
       name: Build & push Docker image
