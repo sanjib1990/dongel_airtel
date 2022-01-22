@@ -1,63 +1,62 @@
 package config
 
 import (
-	"fmt"
-	"github.com/mitchellh/mapstructure"
-	"github.com/spf13/viper"
+	"github.com/joho/godotenv"
 	"os"
 	"strconv"
+	"sync"
 )
 
 var Values *config
+var confMu = &sync.Mutex{}
+var cfg map[string]string
+
+func get(key string, _default string) string {
+	confMu.Lock()
+	defer confMu.Unlock()
+	if val, ok := cfg[key]; ok {
+		return val
+	}
+	val, ok := os.LookupEnv(key)
+	if !ok {
+		return _default
+	}
+	return val
+}
 
 func init() {
-	envPath := os.Getenv("ENV_PATH")
+	env, _ := godotenv.Read()
 
-	if envPath != "" {
-		envPath += "/"
+	if env == nil {
+		env = make(map[string]string)
 	}
 
-	viper.SetConfigFile(envPath + ".env")
-
-	var result map[string]interface{}
-
-	if err := viper.ReadInConfig(); err != nil {
-		fmt.Printf("Error reading config file, %s", err)
-	}
-
-	err := viper.Unmarshal(&result)
-	if err != nil {
-		fmt.Printf("Unable to decode into map, %v", err)
-	}
-
-	decErr := mapstructure.Decode(result, &Values)
-
-	if decErr != nil {
-		fmt.Println("error decoding")
-	}
-
-	Values.MaxRetries, _ = strconv.Atoi(Values.MaxRetriesStr)
-	Values.BatteryAlertPercentage, _ = strconv.Atoi(Values.BatteryAlertPercentageStr)
-
-	Values.IsDebug = Values.DebugStr == "1"
+	// Assigining env to config
+	cfg = env
+	Values = &config{}
+	Values.UserName = get("user_name", "")
+	Values.Password = get("password", "")
+	Values.BaseUrl = get("base_url", "")
+	Values.SlackToken = get("slack_token", "")
+	Values.SlackChannelId = get("slack_channel_id", "")
+	Values.MaxRetries, _ = strconv.Atoi(get("max_retries", "5"))
+	Values.BatteryAlertPercentage, _ = strconv.Atoi(get("battery_alert_percentage", "20"))
+	Values.IsDebug = get("debug", "0") == "1"
 
 	Values.Uri.SetCommand = "/goform/goform_set_cmd_process"
 	Values.Uri.GetCommand = "/goform/goform_get_cmd_process"
 }
 
 type config struct {
-	UserName                  string `mapstructure:"user_name"`
-	Password                  string `mapstructure:"password"`
-	BaseUrl                   string `mapstructure:"base_url"`
-	MaxRetriesStr             string `mapstructure:"max_retries"`
-	BatteryAlertPercentageStr string `mapstructure:"battery_alert_percentage"`
-	SlackToken                string `mapstructure:"slack_token"`
-	DebugStr                  string `mapstructure:"debug"`
-	SlackChannelId            string `mapstructure:"slack_channel_id"`
-	IsDebug                   bool
-	Uri                       uri
-	MaxRetries                int
-	BatteryAlertPercentage    int
+	UserName               string `mapstructure:"user_name"`
+	Password               string `mapstructure:"password"`
+	BaseUrl                string `mapstructure:"base_url"`
+	SlackToken             string `mapstructure:"slack_token"`
+	SlackChannelId         string `mapstructure:"slack_channel_id"`
+	IsDebug                bool
+	Uri                    uri
+	MaxRetries             int
+	BatteryAlertPercentage int
 }
 
 type uri struct {

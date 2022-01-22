@@ -2,6 +2,7 @@ hello:
 	echo "hello"
 
 build:
+	go mod vendor
 	go build -race -o dongel ./
 
 clean:

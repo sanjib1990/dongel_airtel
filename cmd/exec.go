@@ -61,7 +61,7 @@ var execCmd = &cobra.Command{
 		}
 
 		if minBatteryVlm == "" {
-			minBatteryVlm = config.Values.BatteryAlertPercentageStr
+			minBatteryVlm = strconv.Itoa(config.Values.BatteryAlertPercentage)
 		}
 
 		minBattery, _ = strconv.Atoi(minBatteryVlm)
