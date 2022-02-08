@@ -9,8 +9,9 @@ import (
 	"dongel/Service"
 	"dongel/config"
 	"fmt"
-	"github.com/spf13/cobra"
 	"strconv"
+
+	"github.com/spf13/cobra"
 )
 
 var ExecSlackMessage = ""
@@ -65,7 +66,7 @@ var execCmd = &cobra.Command{
 		}
 
 		minBattery, _ = strconv.Atoi(minBatteryVlm)
-		if alert == true && minBattery > 0 {
+		if alert && minBattery > 0 {
 			step++
 			ExecSlackMessage += "Low Charge Check -> "
 			fmt.Println("[" + strconv.Itoa(step) + "] Low Charge Check")
@@ -77,7 +78,7 @@ var execCmd = &cobra.Command{
 			}
 		}
 
-		if overChargeAlert == true {
+		if overChargeAlert && rsp.BatteryCharging == "1" {
 			step++
 			ExecSlackMessage += "Over Charge Check -> "
 			fmt.Println("[" + strconv.Itoa(step) + "] Over Charge Check")
@@ -89,7 +90,7 @@ var execCmd = &cobra.Command{
 			}
 		}
 
-		if viewSms == true {
+		if viewSms {
 			step++
 			fmt.Println("[" + strconv.Itoa(step) + "] SMS")
 			ExecSlackMessage += "SMS -> "
