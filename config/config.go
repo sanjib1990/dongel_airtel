@@ -24,6 +24,24 @@ func get(key string, _default string) string {
 	return val
 }
 
+func getType2GValues() []string {
+	return []string{
+		"GSM", "GPRS", "EDGE", "G", "E",
+	}
+}
+
+func getType3GValues() []string {
+	return []string{
+		"UMTS", "HSDPA", "HSUPA", "HSPA", "HSPA+", "DC-HSPA+", "WCDMA", "TD-SCDMA", "TD", "3G", "TD_SCDMA",
+	}
+}
+
+func getType4GValues() []string {
+	return []string{
+		"LTE", "4G", "FDD", "TDD", "TDD-LTE", "FDD-LTE", "TDD_LTE", "FDD_LTE",
+	}
+}
+
 func init() {
 	env, _ := godotenv.Read()
 
@@ -34,6 +52,21 @@ func init() {
 	// Assigining env to config
 	cfg = env
 	Values = &config{}
+
+	Values.NetworkTypeMap = make(map[string]string)
+
+	for _, val := range getType2GValues() {
+		Values.NetworkTypeMap[val] = "2G"
+	}
+
+	for _, val := range getType3GValues() {
+		Values.NetworkTypeMap[val] = "3G"
+	}
+
+	for _, val := range getType4GValues() {
+		Values.NetworkTypeMap[val] = "4G"
+	}
+
 	Values.UserName = get("user_name", "")
 	Values.Password = get("password", "")
 	Values.BaseUrl = get("base_url", "")
@@ -57,6 +90,7 @@ type config struct {
 	Uri                    uri
 	MaxRetries             int
 	BatteryAlertPercentage int
+	NetworkTypeMap         map[string]string
 }
 
 type uri struct {

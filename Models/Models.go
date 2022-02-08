@@ -19,6 +19,12 @@ type Response struct {
 	SmsUnreadNum      string      `json:"sms_unread_num"`
 	StaCount          string      `json:"sta_count"`
 	Loginfo           string      `json:"loginfo"`
+	SubNetworkType    string      `json:"sub_network_type"`
+	NetworkType       string      `json:"network_type"`
+	UploadRate        string      `json:"realtime_tx_thrpt"`
+	DownloadRate      string      `json:"realtime_rx_thrpt"`
+	NetworkProvider   string      `json:"network_provider"`
+	SignalBar         string      `json:"signalbar"`
 	SmsDataTotal      interface{} `json:"sms_data_total"`
 	Status            int
 }

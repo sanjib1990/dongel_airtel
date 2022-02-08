@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"io"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
@@ -40,6 +41,31 @@ func appendTotalConnections(writer table.Writer, stats Models.Response) {
 	writer.AppendSeparator()
 }
 
+func appendNetworkStrength(writer table.Writer, stats Models.Response) {
+	bar, err := strconv.Atoi(stats.SignalBar)
+	if err != nil {
+		bar = 0
+	}
+	strength := bar * 20
+	writer.AppendRow([]interface{}{"Network Strength", strconv.Itoa(strength) + " %"})
+	writer.AppendSeparator()
+}
+
+func appendNetworkType(writer table.Writer, stats Models.Response) {
+	writer.AppendRow([]interface{}{"Network Type", getSignalType(&stats)})
+	writer.AppendSeparator()
+}
+
+func appendNetworkProvider(writer table.Writer, stats Models.Response) {
+	writer.AppendRow([]interface{}{"Network Provider", stats.NetworkProvider})
+	writer.AppendSeparator()
+}
+
+func appendNetworkSpeed(writer table.Writer, stats Models.Response) {
+	writer.AppendRow([]interface{}{"Speed", getNetworkSpeed(&stats)})
+	writer.AppendSeparator()
+}
+
 func DisplayStats(stats *Models.Response) {
 	t := table.NewWriter()
 
@@ -49,6 +75,10 @@ func DisplayStats(stats *Models.Response) {
 	appendBatteryDetails(t, *stats)
 	appendHasUnreadSMS(t, *stats)
 	appendTotalConnections(t, *stats)
+	appendNetworkStrength(t, *stats)
+	appendNetworkType(t, *stats)
+	appendNetworkProvider(t, *stats)
+	appendNetworkSpeed(t, *stats)
 
 	t.Render()
 }
@@ -70,10 +100,82 @@ func Login(user *Models.User) Models.Response {
 	return makeSetCommandCalls(data, "0", "Login: ")
 }
 
+func getSignalType(resp *Models.Response) string {
+	val, _ := config.Values.NetworkTypeMap[resp.NetworkType]
+
+	return val
+}
+
+func roundToTwoDecimalNumberToStr(num int64) string {
+	roundedFloat64 := math.Round(float64(num)*100) / 100
+
+	return strconv.FormatFloat(roundedFloat64, 'f', 2, 64)
+}
+
+func getSpeed(speedStr string) string {
+	volume, err := strconv.ParseInt(speedStr, 10, 64)
+
+	if err != nil {
+		return "0 Mb"
+	}
+
+	needReverse := false
+
+	if volume < 0 {
+		needReverse = true
+		volume = 0 - volume
+	}
+	var numberOfBytesInOneB = int64(1)
+	var numberOfBytesInOneKB = numberOfBytesInOneB * 1024
+	var numberOfBytesInOneMB = numberOfBytesInOneKB * 1024
+	var numberOfBytesInOneGB = numberOfBytesInOneMB * 1024
+	var numberOfBytesInOneTB = numberOfBytesInOneGB * 1024
+
+	var labelForOneB = "b"
+	var labelForOneKB = "Kb"
+	var labelForOneMB = "Mb"
+	var labelForOneGB = "GB"
+	var labelForOneTB = "Tb"
+
+	volume = volume * 8
+
+	var vol = volume / numberOfBytesInOneTB
+	var displayString = roundToTwoDecimalNumberToStr(vol) + " " + labelForOneTB
+	if float64(vol) < 0.5 {
+		vol = volume / numberOfBytesInOneGB
+		displayString = roundToTwoDecimalNumberToStr(vol) + " " + labelForOneGB
+
+		if float64(vol) < 0.5 {
+			vol = volume / numberOfBytesInOneMB
+			displayString = roundToTwoDecimalNumberToStr(vol) + " " + labelForOneMB
+
+			if float64(vol) < 0.5 {
+				vol = volume / numberOfBytesInOneKB
+				displayString = roundToTwoDecimalNumberToStr(vol) + " " + labelForOneKB
+
+				if float64(vol) < 0.5 {
+					vol = volume
+					displayString = roundToTwoDecimalNumberToStr(vol) + " " + labelForOneB
+				}
+			}
+		}
+	}
+	if needReverse {
+		displayString = "-" + displayString
+	}
+	return displayString
+}
+
+func getNetworkSpeed(resp *Models.Response) string {
+	up := "↑ " + getSpeed(resp.UploadRate) + "/sec"
+	down := "↓ " + getSpeed(resp.DownloadRate) + "/sec"
+	return down + " " + up
+}
+
 func Stats() Models.Response {
 	data := map[string]string{
 		"multi_data": "1",
-		"cmd":        "battery_vol_percent,battery_charging,sms_unread_num,sta_count,loginfo",
+		"cmd":        "battery_vol_percent,battery_charging,sms_unread_num,sta_count,loginfo,network_type,sub_network_type,signalbar,network_provider,realtime_rx_thrpt,realtime_tx_thrpt",
 	}
 	var rsp Models.Response
 
