@@ -27,6 +27,8 @@ type Response struct {
 	SignalBar         string      `json:"signalbar"`
 	SmsDataTotal      interface{} `json:"sms_data_total"`
 	Status            int
+	RenderedTxt       string
+	RenderedMd        string
 }
 
 func (receiver Response) init() {

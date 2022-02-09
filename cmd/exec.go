@@ -15,6 +15,7 @@ import (
 )
 
 var ExecSlackMessage = ""
+var statsMd = ""
 
 // execCmd represents the exec command
 var execCmd = &cobra.Command{
@@ -27,13 +28,14 @@ var execCmd = &cobra.Command{
 		if config.Values.SlackChannelId == "" {
 			return
 		}
-		ExecSlackMessage = "*[Dongel Automation Run]* `" + ExecSlackMessage + "`"
-
-		slack.SendNotification(config.Values.SlackChannelId, ExecSlackMessage)
+		ExecSlackMessage = "*[Dongel Automation Run]* `" + ExecSlackMessage + "`\n"
+		statsMd = "```" + statsMd + "```"
+		slack.SendNotification(config.Values.SlackChannelId, ExecSlackMessage+statsMd)
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		usr := Models.User{}
 		ExecSlackMessage = ""
+		statsMd = ""
 		usr.UserName = rootCmd.PersistentFlags().Lookup("username").Value.String()
 		usr.Password = rootCmd.PersistentFlags().Lookup("password").Value.String()
 		minBatteryVlm := rootCmd.PersistentFlags().Lookup("alert-charge").Value.String()
@@ -60,6 +62,8 @@ var execCmd = &cobra.Command{
 			ExecSlackMessage += "Fail"
 			return
 		}
+
+		statsMd = rsp.RenderedTxt
 
 		if minBatteryVlm == "" {
 			minBatteryVlm = strconv.Itoa(config.Values.BatteryAlertPercentage)

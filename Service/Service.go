@@ -80,7 +80,7 @@ func DisplayStats(stats *Models.Response) {
 	appendNetworkProvider(t, *stats)
 	appendNetworkSpeed(t, *stats)
 
-	t.Render()
+	stats.RenderedTxt = t.Render()
 }
 
 func Login(user *Models.User) Models.Response {
