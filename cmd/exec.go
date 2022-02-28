@@ -82,7 +82,7 @@ var execCmd = &cobra.Command{
 			}
 		}
 
-		if overChargeAlert && rsp.BatteryCharging == "1" {
+		if overChargeAlert {
 			step++
 			ExecSlackMessage += "Over Charge Check -> "
 			fmt.Println("[" + strconv.Itoa(step) + "] Over Charge Check")
